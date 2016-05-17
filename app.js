@@ -16,5 +16,9 @@ if (process.env.NODE_ENV !== 'production') {
   }))
 }
 
-app.listen(port)
-console.log(`Listening at http://localhost:${port}`)
+var server = app.listen(port,function() {
+    var host = 'localhost';
+    var port = server.address().port;
+    console.log('App listening at http://%s:%s', host, port);
+});
+//console.log(`Listening at http://localhost:${port}`)
