@@ -1,11 +1,5 @@
 var webpack = require('webpack');
 
-var definePlugin = new webpack.DefinePlugin({
-  __DEV__: JSON.stringify(JSON.parse(process.env.BUILD_DEV || 'true')),
-  __PRERELEASE__: JSON.stringify(JSON.parse(process.env.BUILD_PRERELEASE || 'false'))
-});
-
-var commonsPlugin = new webpack.optimize.CommonsChunkPlugin('common.js');
 
 module.exports = {
   cache: true,
@@ -25,6 +19,7 @@ module.exports = {
   },
   plugins: [
     new webpack.optimize.DedupePlugin(),
+    new webpack.optimize.CommonsChunkPlugin('common.js'),
     new webpack.optimize.UglifyJsPlugin({
       minimize: true,
       compress: {
