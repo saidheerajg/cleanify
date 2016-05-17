@@ -1,26 +1,23 @@
 {
-  "name": "webpack-heroku-boilerplate",
+  "name": "cleanify",
   "version": "1.0.0",
-  "description": "Simplest Heroku starter kit for React apps.",
-  "main": "./src/entry.js",
-  "homepage": "https://github.com/wallacyyy/webpack-heroku",
-  "author": "Leonardo Couto",
-  "license": "MIT",
+  "description": "clenaify test",
+  "main": "index.js",
   "scripts": {
     "build": "webpack --config ./webpack.prod.config.js --progress --colors",
-    "start": "node ./app.js"
+    "start": "node ./src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wallacyyy/webpack-heroku.git"
+    "url": "git+https://github.com/saidheerajg/cleanify.git"
   },
-  "keywords": [
-    "react",
-    "express",
-    "webpack",
-    "es2015",
-    "javascript"
-  ],
+  "author": "\"sai dheeraj\"",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/saidheerajg/cleanify/issues"
+  },
+  "homepage": "https://github.com/saidheerajg/cleanify#readme",
   "dependencies": {
     "express": "^4.13.4",
     "react": "^0.14.8",
