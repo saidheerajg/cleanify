@@ -1,54 +1,87 @@
-import express from 'express';
-import webpack from 'webpack';
-import { ENV } from './config/appConfig';
-import { connect } from './db';
-import passportConfig from './config/passport';
-import expressConfig from './config/express';
-import routesConfig from './config/routes';
-import webpackDevConfig from '../webpack/webpack.config.dev-client';
-const App = require('../public/assets/server');
-const app = express();
+var express= require('express');
+var compression = require('compression');
+var path = require('path');
+var cors = require('cors');
 
-/*
- * Database-specific setup
- * - connect to MongoDB using mongoose
- * - register mongoose Schema
- */
-connect();
 
-/*
- * REMOVE if you do not need passport configuration
- */
-passportConfig();
+var app = express();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+var feed = require('../feed.js');
 
-if (ENV === 'development') {
-  const compiler = webpack(webpackDevConfig);
-  app.use(require('webpack-dev-middleware')(compiler, {
-    noInfo: true,
-    publicPath: webpackDevConfig.output.publicPath
-  }));
+var static_path = path.join(__dirname, './../build');
 
-  app.use(require('webpack-hot-middleware')(compiler));
+app.enable('trust proxy');
+
+app.use(compression());
+
+
+app.options('/api/currentTime', cors());
+app.get('/api/currentTime', cors(), function(req, res) {
+  res.send({ time: new Date() });
+});
+
+app.route('/').get(function(req, res) {
+    res.header('Cache-Control', "max-age=60, must-revalidate, private");
+    res.sendFile('index.html', {
+        root: static_path
+    });
+});
+
+function nocache(req, res, next) {
+  res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  res.header('Expires', '-1');
+  res.header('Pragma', 'no-cache');
+  next();
 }
 
-/*
- * Bootstrap application settings
- */
-expressConfig(app);
+app.use('/', express.static(static_path, {
+    maxage: 31557600
+}));
 
-/*
- * REMOVE if you do not need any routes
- *
- * Note: Some of these routes have passport and database model dependencies
- */
-routesConfig(app);
+var server = app.listen(process.env.PORT || 5000, function () {
 
-/*
- * This is where the magic happens. We take the locals data we have already
- * fetched and seed our stores with data.
- * App is a function that requires store data and url
- * to initialize and return the React-rendered html string
- */
-app.get('*', App.default);
+  var host = server.address().address;
+  var port = server.address().port;
 
-app.listen(app.get('port'));
+  console.log('Example app listening at http://%s:%s', host, port);
+
+});
+
+io.on('connection', function (socket) {
+    console.log('User connected. Socket id %s', socket.id);
+
+    socket.on('join', function (rooms) {
+        console.log('Socket %s subscribed to %s', socket.id, rooms);
+        if (Array.isArray(rooms)) {
+            rooms.forEach(function(room) {
+                socket.join(room);
+            });
+        } else {
+            socket.join(rooms);
+        }
+    });
+
+    socket.on('leave', function (rooms) {
+        console.log('Socket %s unsubscribed from %s', socket.id, rooms);
+        if (Array.isArray(rooms)) {
+            rooms.forEach(function(room) {
+                socket.leave(room);
+            });
+        } else {
+            socket.leave(rooms);
+        }
+    });
+
+    socket.on('disconnect', function () {
+        console.log('User disconnected. %s. Socket id %s', socket.id);
+    });
+});
+
+feed.start(function(room, type, message) {
+    io.to(room).emit(type, message);
+});
+
+http.listen(3000, function () {
+    console.log('listening on: 3000');
+});

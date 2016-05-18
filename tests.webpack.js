@@ -1,3 +1,2 @@
-// require.context(directory, useSubdirectories = false, regExp = /^\.\//)
-var context = require.context('./app', true, /-test.js$/);
+var context = require.context('./tests', true, /.*test\.js$/); //make sure you have your directory and regex test set correctly!
 context.keys().forEach(context);
